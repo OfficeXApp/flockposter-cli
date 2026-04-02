@@ -205,7 +205,7 @@ flockposter --help
 
 ### Optional
 
-- `FLOCKPOSTER_API_URL` - Custom API endpoint (default: `https://app.flockposter.com`)
+- `FLOCKPOSTER_API_URL` - Custom API endpoint (default: `https://app.flockposter.com/api`)
 
 ### Setting Environment Variables
 

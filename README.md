@@ -527,7 +527,7 @@ The CLI interacts with these FlockPoster API endpoints:
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `FLOCKPOSTER_API_KEY` | ✅ Yes | - | Your FlockPoster API key |
-| `FLOCKPOSTER_API_URL` | No | `https://app.flockposter.com` | Custom API endpoint |
+| `FLOCKPOSTER_API_URL` | No | `https://app.flockposter.com/api` | Custom API endpoint |
 
 ---
 

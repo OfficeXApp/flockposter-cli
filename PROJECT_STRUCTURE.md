@@ -214,7 +214,7 @@ Output to console
 | Variable | Required | Default | Usage |
 |----------|----------|---------|-------|
 | `FLOCKPOSTER_API_KEY` | ✅ Yes | - | Authentication token |
-| `FLOCKPOSTER_API_URL` | ❌ No | `https://app.flockposter.com` | Custom API endpoint |
+| `FLOCKPOSTER_API_URL` | ❌ No | `https://app.flockposter.com/api` | Custom API endpoint |
 
 ## Dependencies
 
