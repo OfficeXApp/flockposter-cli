@@ -1,0 +1,26 @@
+{
+  "name": "flockposter",
+  "version": "1.0.0",
+  "description": "Social media automation CLI for scheduling posts, managing integrations, uploading media, and tracking analytics across 28+ platforms including X, LinkedIn, Reddit, YouTube, TikTok, Instagram, and more",
+  "author": {
+    "name": "OfficeX",
+    "url": "https://github.com/OfficeXApp"
+  },
+  "homepage": "https://app.flockposter.com",
+  "repository": "https://github.com/OfficeXApp/flockposter-cli",
+  "license": "AGPL-3.0",
+  "keywords": [
+    "flockposter",
+    "social-media",
+    "scheduling",
+    "automation",
+    "ai-agent",
+    "twitter",
+    "linkedin",
+    "facebook",
+    "instagram",
+    "tiktok",
+    "youtube",
+    "reddit"
+  ]
+}

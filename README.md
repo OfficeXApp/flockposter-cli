@@ -1,0 +1,685 @@
+# FlockPoster CLI
+
+**Social media automation CLI for AI agents** - Schedule posts across 28+ platforms programmatically.
+
+The FlockPoster CLI provides a command-line interface to the FlockPoster API, enabling developers and AI agents to automate social media posting, manage content, and handle media uploads across platforms like Twitter/X, LinkedIn, Reddit, YouTube, TikTok, Instagram, Facebook, and more.
+
+---
+
+## Installation
+
+### From npm (Recommended)
+
+```bash
+npm install -g flockposter-cli
+# or
+pnpm install -g flockposter-cli
+```
+
+---
+
+## Setup
+
+**Required:** Set your FlockPoster API key
+
+```bash
+export FLOCKPOSTER_API_KEY=your_api_key_here
+```
+
+**Optional:** Custom API endpoint
+
+```bash
+export FLOCKPOSTER_API_URL=https://your-custom-api.com
+```
+
+---
+
+## Commands
+
+### Discovery & Settings
+
+**List all connected integrations**
+```bash
+flockposter integrations:list
+```
+
+Returns integration IDs, provider names, and metadata.
+
+**Get integration settings schema**
+```bash
+flockposter integrations:settings <integration-id>
+```
+
+Returns character limits, required settings, and available tools for fetching dynamic data.
+
+**Trigger integration tools**
+```bash
+flockposter integrations:trigger <integration-id> <method-name>
+flockposter integrations:trigger <integration-id> <method-name> -d '{"key":"value"}'
+```
+
+Fetch dynamic data like Reddit flairs, YouTube playlists, LinkedIn companies, etc.
+
+**Examples:**
+```bash
+# Get Reddit flairs
+flockposter integrations:trigger reddit-123 getFlairs -d '{"subreddit":"programming"}'
+
+# Get YouTube playlists
+flockposter integrations:trigger youtube-456 getPlaylists
+
+# Get LinkedIn companies
+flockposter integrations:trigger linkedin-789 getCompanies
+```
+
+---
+
+### Creating Posts
+
+**Simple scheduled post**
+```bash
+flockposter posts:create -c "Content" -s "2024-12-31T12:00:00Z" -i "integration-id"
+```
+
+**Draft post**
+```bash
+flockposter posts:create -c "Content" -s "2024-12-31T12:00:00Z" -t draft -i "integration-id"
+```
+
+**Post with media**
+```bash
+flockposter posts:create -c "Content" -m "img1.jpg,img2.jpg" -s "2024-12-31T12:00:00Z" -i "integration-id"
+```
+
+**Post with comments** (each comment can have its own media)
+```bash
+flockposter posts:create \
+  -c "Main post" -m "main.jpg" \
+  -c "First comment" -m "comment1.jpg" \
+  -c "Second comment" -m "comment2.jpg,comment3.jpg" \
+  -s "2024-12-31T12:00:00Z" \
+  -i "integration-id"
+```
+
+**Multi-platform post**
+```bash
+flockposter posts:create -c "Content" -s "2024-12-31T12:00:00Z" -i "twitter-id,linkedin-id,facebook-id"
+```
+
+**Platform-specific settings**
+```bash
+flockposter posts:create \
+  -c "Content" \
+  -s "2024-12-31T12:00:00Z" \
+  --settings '{"subreddit":[{"value":{"subreddit":"programming","title":"Post Title","type":"text"}}]}' \
+  -i "reddit-id"
+```
+
+**Complex post from JSON file**
+```bash
+flockposter posts:create --json post.json
+```
+
+**Options:**
+- `-c, --content` - Post/comment content (use multiple times for posts with comments)
+- `-s, --date` - Schedule date in ISO 8601 format (REQUIRED)
+- `-t, --type` - Post type: "schedule" or "draft" (default: "schedule")
+- `-m, --media` - Comma-separated media URLs for corresponding `-c`
+- `-i, --integrations` - Comma-separated integration IDs (required)
+- `-d, --delay` - Delay between comments in minutes (default: 0)
+- `--settings` - Platform-specific settings as JSON string
+- `-j, --json` - Path to JSON file with full post structure
+- `--shortLink` - Use short links (default: true)
+
+---
+
+### Managing Posts
+
+**List posts**
+```bash
+flockposter posts:list
+flockposter posts:list --startDate "2024-01-01T00:00:00Z" --endDate "2024-12-31T23:59:59Z"
+flockposter posts:list --customer "customer-id"
+```
+
+Defaults to last 30 days to next 30 days if dates not specified.
+
+**Delete post**
+```bash
+flockposter posts:delete <post-id>
+```
+
+---
+
+### Analytics
+
+**Get platform analytics**
+```bash
+flockposter analytics:platform <integration-id>
+flockposter analytics:platform <integration-id> -d 30
+```
+
+Returns metrics like followers, impressions, and engagement over time for a specific integration/channel. The `-d` flag specifies the number of days to look back (default: 7).
+
+**Get post analytics**
+```bash
+flockposter analytics:post <post-id>
+flockposter analytics:post <post-id> -d 30
+```
+
+Returns metrics like likes, comments, shares, and impressions for a specific published post.
+
+**⚠️ If `analytics:post` returns `{"missing": true}`**, the post was published but the platform didn't return a usable post ID. You must resolve this before analytics will work:
+
+```bash
+# 1. List available content from the provider
+flockposter posts:missing <post-id>
+
+# 2. Connect the correct content to the post
+flockposter posts:connect <post-id> --release-id "7321456789012345678"
+
+# 3. Analytics will now work
+flockposter analytics:post <post-id>
+```
+
+---
+
+### Connecting Missing Posts
+
+Some platforms (e.g. TikTok) don't return a post ID immediately after publishing. The post's `releaseId` is set to `"missing"` and analytics won't work until resolved.
+
+**List available content from the provider**
+```bash
+flockposter posts:missing <post-id>
+```
+
+Returns an array of `{id, url}` items representing recent content from the provider. Returns an empty array if the provider doesn't support this feature.
+
+**Connect a post to its published content**
+```bash
+flockposter posts:connect <post-id> --release-id "<content-id>"
+```
+
+---
+
+### Media Upload
+
+**Upload file and get URL**
+```bash
+flockposter upload <file-path>
+```
+
+**⚠️ IMPORTANT: Upload Files Before Posting**
+
+You **must** upload media files to FlockPoster before using them in posts. Many platforms (especially TikTok, Instagram, and YouTube) require verified/trusted URLs and will reject external links.
+
+**Workflow:**
+1. Upload your file using `flockposter upload`
+2. Extract the returned URL
+3. Use that URL in your post's `-m` parameter
+
+**Supported formats:**
+- **Images:** PNG, JPG, JPEG, GIF
+- **Videos:** MP4
+
+**Example:**
+```bash
+# 1. Upload the file first
+RESULT=$(flockposter upload video.mp4)
+PATH=$(echo "$RESULT" | jq -r '.path')
+
+# 2. Use the FlockPoster URL in your post
+flockposter posts:create -c "Check out my video!" -s "2024-12-31T12:00:00Z" -m "$PATH" -i "tiktok-id"
+```
+
+**Why this is required:**
+- **TikTok, Instagram, YouTube** only accept URLs from trusted domains
+- **Security:** Platforms verify media sources to prevent abuse
+- **Reliability:** FlockPoster ensures your media is always accessible
+
+---
+
+## Platform-Specific Features
+
+### Reddit
+```bash
+# Get available flairs
+flockposter integrations:trigger reddit-id getFlairs -d '{"subreddit":"programming"}'
+
+# Post with subreddit and flair
+flockposter posts:create \
+  -c "Content" \
+  -s "2024-12-31T12:00:00Z" \
+  --settings '{"subreddit":[{"value":{"subreddit":"programming","title":"My Post","type":"text","is_flair_required":true,"flair":{"id":"flair-123","name":"Discussion"}}}]}' \
+  -i "reddit-id"
+```
+
+### YouTube
+```bash
+# Get playlists
+flockposter integrations:trigger youtube-id getPlaylists
+
+# Upload video FIRST (required!)
+VIDEO=$(flockposter upload video.mp4)
+VIDEO_URL=$(echo "$VIDEO" | jq -r '.path')
+
+# Post with uploaded video URL
+flockposter posts:create \
+  -c "Video description" \
+  -s "2024-12-31T12:00:00Z" \
+  --settings '{"title":"Video Title","type":"public","tags":[{"value":"tech","label":"Tech"}],"playlistId":"playlist-id"}' \
+  -m "$VIDEO_URL" \
+  -i "youtube-id"
+```
+
+### TikTok
+```bash
+# Upload video FIRST (TikTok only accepts verified URLs!)
+VIDEO=$(flockposter upload video.mp4)
+VIDEO_URL=$(echo "$VIDEO" | jq -r '.path')
+
+# Post with uploaded video URL
+flockposter posts:create \
+  -c "Video caption #fyp" \
+  -s "2024-12-31T12:00:00Z" \
+  --settings '{"privacy":"PUBLIC_TO_EVERYONE","duet":true,"stitch":true}' \
+  -m "$VIDEO_URL" \
+  -i "tiktok-id"
+```
+
+### LinkedIn
+```bash
+# Get companies you can post to
+flockposter integrations:trigger linkedin-id getCompanies
+
+# Post as company
+flockposter posts:create \
+  -c "Company announcement" \
+  -s "2024-12-31T12:00:00Z" \
+  --settings '{"companyId":"company-123"}' \
+  -i "linkedin-id"
+```
+
+### X (Twitter)
+```bash
+# Create thread
+flockposter posts:create \
+  -c "Thread 1/3 🧵" \
+  -c "Thread 2/3" \
+  -c "Thread 3/3" \
+  -s "2024-12-31T12:00:00Z" \
+  -d 2000 \
+  -i "twitter-id"
+
+# With reply settings
+flockposter posts:create \
+  -c "Tweet content" \
+  -s "2024-12-31T12:00:00Z" \
+  --settings '{"who_can_reply_post":"everyone"}' \
+  -i "twitter-id"
+```
+
+### Instagram
+```bash
+# Upload image FIRST (Instagram requires verified URLs!)
+IMAGE=$(flockposter upload image.jpg)
+IMAGE_URL=$(echo "$IMAGE" | jq -r '.path')
+
+# Regular post
+flockposter posts:create \
+  -c "Caption #hashtag" \
+  -s "2024-12-31T12:00:00Z" \
+  --settings '{"post_type":"post"}' \
+  -m "$IMAGE_URL" \
+  -i "instagram-id"
+
+# Story (upload first)
+STORY=$(flockposter upload story.jpg)
+STORY_URL=$(echo "$STORY" | jq -r '.path')
+
+flockposter posts:create \
+  -c "" \
+  -s "2024-12-31T12:00:00Z" \
+  --settings '{"post_type":"story"}' \
+  -m "$STORY_URL" \
+  -i "instagram-id"
+```
+
+**See [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md) for all 28+ platforms.**
+
+---
+
+## Features for AI Agents
+
+### Discovery Workflow
+The CLI enables dynamic discovery of integration capabilities:
+
+1. **List integrations** - Get available social media accounts
+2. **Get settings** - Retrieve character limits, required fields, and available tools
+3. **Trigger tools** - Fetch dynamic data (flairs, playlists, boards, etc.)
+4. **Create posts** - Use discovered data in posts
+5. **Analyze** - Get post analytics; if `{"missing": true}` is returned, resolve with `posts:missing` + `posts:connect`
+
+This allows AI agents to adapt to different platforms without hardcoded knowledge.
+
+### JSON Mode
+For complex posts with multiple platforms and settings:
+
+```bash
+flockposter posts:create --json complex-post.json
+```
+
+JSON structure:
+```json
+{
+  "integrations": ["twitter-123", "linkedin-456"],
+  "posts": [
+    {
+      "provider": "twitter",
+      "post": [
+        {
+          "content": "Tweet version",
+          "image": ["twitter-image.jpg"]
+        }
+      ]
+    },
+    {
+      "provider": "linkedin",
+      "post": [
+        {
+          "content": "LinkedIn version with more context...",
+          "image": ["linkedin-image.jpg"]
+        }
+      ],
+      "settings": {
+        "__type": "linkedin",
+        "companyId": "company-123"
+      }
+    }
+  ]
+}
+```
+
+### All Output is JSON
+Every command outputs JSON for easy parsing:
+
+```bash
+INTEGRATIONS=$(flockposter integrations:list | jq -r '.')
+REDDIT_ID=$(echo "$INTEGRATIONS" | jq -r '.[] | select(.identifier=="reddit") | .id')
+```
+
+### Threading Support
+Comments are automatically converted to threads/replies based on platform:
+- **Twitter/X**: Thread of tweets
+- **Reddit**: Comment replies
+- **LinkedIn**: Comment on post
+- **Instagram**: First comment
+
+```bash
+flockposter posts:create \
+  -c "Main post" \
+  -c "Comment 1" \
+  -c "Comment 2" \
+  -i "integration-id"
+```
+
+---
+
+## Common Workflows
+
+### Reddit Post with Flair
+```bash
+#!/bin/bash
+REDDIT_ID=$(flockposter integrations:list | jq -r '.[] | select(.identifier=="reddit") | .id')
+FLAIRS=$(flockposter integrations:trigger "$REDDIT_ID" getFlairs -d '{"subreddit":"programming"}')
+FLAIR_ID=$(echo "$FLAIRS" | jq -r '.output[0].id')
+
+flockposter posts:create \
+  -c "My post content" \
+  -s "2024-12-31T12:00:00Z" \
+  --settings "{\"subreddit\":[{\"value\":{\"subreddit\":\"programming\",\"title\":\"Post Title\",\"type\":\"text\",\"is_flair_required\":true,\"flair\":{\"id\":\"$FLAIR_ID\",\"name\":\"Discussion\"}}}]}" \
+  -i "$REDDIT_ID"
+```
+
+### YouTube Video Upload
+```bash
+#!/bin/bash
+VIDEO=$(flockposter upload video.mp4)
+VIDEO_PATH=$(echo "$VIDEO" | jq -r '.path')
+
+flockposter posts:create \
+  -c "Video description..." \
+  -s "2024-12-31T12:00:00Z" \
+  --settings '{"title":"My Video","type":"public","tags":[{"value":"tech","label":"Tech"}]}' \
+  -m "$VIDEO_PATH" \
+  -i "youtube-id"
+```
+
+### Multi-Platform Campaign
+```bash
+#!/bin/bash
+flockposter posts:create \
+  -c "Same content everywhere" \
+  -s "2024-12-31T12:00:00Z" \
+  -m "image.jpg" \
+  -i "twitter-id,linkedin-id,facebook-id"
+```
+
+### Batch Scheduling
+```bash
+#!/bin/bash
+DATES=("2024-02-14T09:00:00Z" "2024-02-15T09:00:00Z" "2024-02-16T09:00:00Z")
+CONTENT=("Monday motivation 💪" "Tuesday tips 💡" "Wednesday wisdom 🧠")
+
+for i in "${!DATES[@]}"; do
+  flockposter posts:create \
+    -c "${CONTENT[$i]}" \
+    -s "${DATES[$i]}" \
+    -i "twitter-id"
+done
+```
+
+---
+
+## Documentation
+
+**For AI Agents:**
+- **[SKILL.md](./SKILL.md)** - Complete skill reference with patterns and examples
+
+**Deep-Dive Guides:**
+- **[HOW_TO_RUN.md](./HOW_TO_RUN.md)** - Installation and setup methods
+- **[COMMAND_LINE_GUIDE.md](./COMMAND_LINE_GUIDE.md)** - Complete command syntax reference
+- **[PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md)** - All platform settings schemas
+- **[INTEGRATION_TOOLS_WORKFLOW.md](./INTEGRATION_TOOLS_WORKFLOW.md)** - Tools workflow guide
+- **[INTEGRATION_SETTINGS_DISCOVERY.md](./INTEGRATION_SETTINGS_DISCOVERY.md)** - Settings discovery
+- **[SUPPORTED_FILE_TYPES.md](./SUPPORTED_FILE_TYPES.md)** - Media format reference
+- **[PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)** - Code architecture
+- **[PUBLISHING.md](./PUBLISHING.md)** - npm publishing guide
+
+**Examples:**
+- **[examples/EXAMPLES.md](./examples/EXAMPLES.md)** - Comprehensive examples
+- **[examples/](./examples/)** - Ready-to-use scripts and JSON files
+
+---
+
+## API Endpoints
+
+The CLI interacts with these FlockPoster API endpoints:
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/public/v1/posts` | POST | Create a post |
+| `/public/v1/posts` | GET | List posts |
+| `/public/v1/posts/:id` | DELETE | Delete a post |
+| `/public/v1/posts/:id/missing` | GET | Get missing content from provider |
+| `/public/v1/posts/:id/release-id` | PUT | Update release ID for a post |
+| `/public/v1/integrations` | GET | List integrations |
+| `/public/v1/integration-settings/:id` | GET | Get integration settings |
+| `/public/v1/integration-trigger/:id` | POST | Trigger integration tool |
+| `/public/v1/analytics/:integration` | GET | Get platform analytics |
+| `/public/v1/analytics/post/:postId` | GET | Get post analytics |
+| `/public/v1/upload` | POST | Upload media |
+
+---
+
+## Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `FLOCKPOSTER_API_KEY` | ✅ Yes | - | Your FlockPoster API key |
+| `FLOCKPOSTER_API_URL` | No | `https://app.flockposter.com` | Custom API endpoint |
+
+---
+
+## Error Handling
+
+The CLI provides clear error messages with exit codes:
+
+- **Exit code 0**: Success
+- **Exit code 1**: Error occurred
+
+**Common errors:**
+
+| Error | Solution |
+|-------|----------|
+| `FLOCKPOSTER_API_KEY is not set` | Set environment variable: `export FLOCKPOSTER_API_KEY=key` |
+| `Integration not found` | Run `integrations:list` to get valid IDs |
+| `startDate/endDate required` | Use ISO 8601 format: `"2024-12-31T12:00:00Z"` |
+| `Invalid settings` | Check `integrations:settings` for required fields |
+| `Tool not found` | Check available tools in `integrations:settings` output |
+| `Upload failed` | Verify file exists and format is supported |
+| `analytics:post` returns `{"missing": true}` | Run `posts:missing <id>` then `posts:connect <id> --release-id "<rid>"` |
+
+---
+
+## Development
+
+### Project Structure
+
+```
+src/
+├── index.ts              # CLI entry point with yargs
+├── api.ts                # PostizAPI client class
+├── config.ts             # Environment configuration
+└── commands/
+    ├── posts.ts          # Post management commands
+    ├── integrations.ts   # Integration commands
+    ├── analytics.ts      # Analytics commands
+    └── upload.ts         # Media upload command
+examples/                 # Example scripts and JSON files
+package.json
+tsconfig.json
+tsup.config.ts            # Build configuration
+README.md                 # This file
+SKILL.md                  # AI agent reference
+```
+
+### Scripts
+
+```bash
+pnpm run dev       # Watch mode for development
+pnpm run build     # Build the CLI
+pnpm run start     # Run the built CLI
+```
+
+### Building
+
+The CLI uses `tsup` for bundling:
+
+```bash
+pnpm run build
+```
+
+Output in `dist/`:
+- `index.js` - Bundled executable with shebang
+- `index.js.map` - Source map
+
+---
+
+## Quick Reference
+
+```bash
+# Environment setup
+export FLOCKPOSTER_API_KEY=your_key
+
+# Discovery
+flockposter integrations:list                           # List integrations
+flockposter integrations:settings <id>                  # Get settings
+flockposter integrations:trigger <id> <method> -d '{}'  # Fetch data
+
+# Posting (date is required)
+flockposter posts:create -c "text" -s "2024-12-31T12:00:00Z" -i "id"                    # Simple
+flockposter posts:create -c "text" -s "2024-12-31T12:00:00Z" -t draft -i "id"          # Draft
+flockposter posts:create -c "text" -m "img.jpg" -s "2024-12-31T12:00:00Z" -i "id"      # With media
+flockposter posts:create -c "main" -c "comment" -s "2024-12-31T12:00:00Z" -i "id"      # With comment
+flockposter posts:create -c "text" -s "2024-12-31T12:00:00Z" --settings '{}' -i "id"   # Platform-specific
+flockposter posts:create --json file.json                                               # Complex
+
+# Management
+flockposter posts:list                                  # List posts
+flockposter posts:delete <id>                          # Delete post
+flockposter upload <file>                              # Upload media
+
+# Analytics
+flockposter analytics:platform <id>                    # Platform analytics (7 days)
+flockposter analytics:platform <id> -d 30             # Platform analytics (30 days)
+flockposter analytics:post <id>                        # Post analytics (7 days)
+flockposter analytics:post <id> -d 30                 # Post analytics (30 days)
+# If analytics:post returns {"missing": true}, resolve it:
+flockposter posts:missing <id>                         # List provider content
+flockposter posts:connect <id> --release-id "<rid>"    # Connect content to post
+
+# Help
+flockposter --help                                     # Show help
+flockposter posts:create --help                        # Command help
+```
+
+---
+
+## Contributing
+
+This CLI is part of the [FlockPoster monorepo](https://github.com/OfficeXApp/flockposter).
+
+To contribute:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes in `apps/cli/`
+4. Run tests: `pnpm run build`
+5. Submit a pull request
+
+---
+
+## License
+
+AGPL-3.0
+
+---
+
+## Links
+
+- **Website:** [app.flockposter.com](https://app.flockposter.com)
+- **API Docs:** [app.flockposter.com](https://app.flockposter.com
+- **GitHub:** [OfficeXApp/flockposter](https://github.com/OfficeXApp/flockposter)
+- **Issues:** [Report bugs](https://github.com/OfficeXApp/flockposter/issues)
+
+---
+
+## Supported Platforms
+
+28+ platforms including:
+
+| Platform | Integration Tools | Settings |
+|----------|------------------|----------|
+| Twitter/X | getLists, getCommunities | who_can_reply_post |
+| LinkedIn | getCompanies | companyId, carousel |
+| Reddit | getFlairs, searchSubreddits | subreddit, title, flair |
+| YouTube | getPlaylists, getCategories | title, type, tags, playlistId |
+| TikTok | - | privacy, duet, stitch |
+| Instagram | - | post_type (post/story) |
+| Facebook | getPages | - |
+| Pinterest | getBoards, getBoardSections | - |
+| Discord | getChannels | - |
+| Slack | getChannels | - |
+| And 18+ more... | | |
+
+**See [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md) for complete documentation.**

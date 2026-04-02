@@ -1,0 +1,21 @@
+{
+  "name": "flockposter-cli",
+  "owner": {
+    "name": "OfficeX"
+  },
+  "metadata": {
+    "description": "FlockPoster social media automation skill for scheduling posts across 28+ platforms",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "flockposter",
+      "description": "Social media automation CLI for scheduling posts, managing integrations, uploading media, and tracking analytics across 28+ platforms including X, LinkedIn, Reddit, YouTube, TikTok, Instagram, and more",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./"
+      ]
+    }
+  ]
+}
