@@ -9,6 +9,17 @@ import type { Argv } from 'yargs';
 yargs(hideBin(process.argv))
   .scriptName('flockposter')
   .usage('$0 <command> [options]')
+  .option('timeout', {
+    describe: 'Request timeout in milliseconds (default: 30000)',
+    type: 'number',
+    global: true,
+  })
+  .option('verbose', {
+    describe: 'Show raw backend error messages for debugging',
+    type: 'boolean',
+    default: false,
+    global: true,
+  })
   .command(
     'posts:create',
     'Create a new post',
@@ -325,6 +336,6 @@ yargs(hideBin(process.argv))
   .version()
   .alias('v', 'version')
   .epilogue(
-    'For more information, visit: https://app.flockposter.com\n\nSet your API key: export FLOCKPOSTER_API_KEY=your_api_key'
+    'For more information, visit: https://app.flockposter.com\n\nSet your API key: export FLOCKPOSTER_API_KEY=your_api_key\nOptional: export FLOCKPOSTER_TIMEOUT_MS=30000'
   )
   .parse();

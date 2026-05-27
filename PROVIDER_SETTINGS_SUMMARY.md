@@ -14,8 +14,8 @@ The CLI now supports **platform-specific settings** for all 28+ integrations!
 | **YouTube** | `youtube` | title, type (public/private/unlisted), tags, thumbnail |
 | **X (Twitter)** | `x` | who_can_reply_post, community |
 | **LinkedIn** | `linkedin` | post_as_images_carousel, carousel_name |
-| **Instagram** | `instagram` | post_type (post/story), collaborators |
-| **TikTok** | `tiktok` | title, privacy_level, duet, stitch, comment, autoAddMusic |
+| **Instagram** | `instagram` | post_type (post/story; Reels use post with video media), collaborators |
+| **TikTok** | `tiktok` | title, privacy_level, duet, stitch, comment, autoAddMusic, content_posting_method |
 | **Facebook** | `facebook` | Platform-specific settings |
 | **Pinterest** | `pinterest` | Platform-specific settings |
 | **Discord** | `discord` | Platform-specific settings |
@@ -155,6 +155,8 @@ flockposter posts:create \
   }' \
   -i "tiktok-123"
 ```
+
+Use `content_posting_method: "DIRECT_POST"` to publish directly to TikTok. Use `content_posting_method: "UPLOAD"` to upload media to TikTok for manual review/edit/publish.
 
 ## JSON File Examples
 

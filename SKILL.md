@@ -562,10 +562,12 @@ VIDEO_URL=$(echo "$VIDEO" | jq -r '.path')
 flockposter posts:create \
   -c "Video caption #fyp" \
   -s "2024-12-31T12:00:00Z" \
-  --settings '{"privacy":"PUBLIC_TO_EVERYONE","duet":true,"stitch":true}' \
+  --settings '{"content_posting_method":"UPLOAD","privacy_level":"PUBLIC_TO_EVERYONE","comment":true,"duet":false,"stitch":false,"autoAddMusic":"no","brand_content_toggle":false,"brand_organic_toggle":false,"video_made_with_ai":false}' \
   -m "$VIDEO_URL" \
   -i "tiktok-id"
 ```
+
+Use `content_posting_method: "DIRECT_POST"` to publish directly to TikTok. Use `content_posting_method: "UPLOAD"` to upload media to TikTok for manual review/edit/publish.
 
 ### X (Twitter)
 ```bash

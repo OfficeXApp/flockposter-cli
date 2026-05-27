@@ -3,7 +3,7 @@ import { getConfig } from '../config';
 import { readFileSync, existsSync } from 'fs';
 
 export async function getMissingContent(args: any) {
-  const config = getConfig();
+  const config = getConfig(args);
   const api = new PostizAPI(config);
 
   if (!args.id) {
@@ -22,7 +22,7 @@ export async function getMissingContent(args: any) {
 }
 
 export async function connectPost(args: any) {
-  const config = getConfig();
+  const config = getConfig(args);
   const api = new PostizAPI(config);
 
   if (!args.id) {
@@ -47,7 +47,7 @@ export async function connectPost(args: any) {
 }
 
 export async function createPost(args: any) {
-  const config = getConfig();
+  const config = getConfig(args);
   const api = new PostizAPI(config);
 
   // Support both simple and complex post creation
@@ -147,7 +147,7 @@ export async function createPost(args: any) {
 }
 
 export async function listPosts(args: any) {
-  const config = getConfig();
+  const config = getConfig(args);
   const api = new PostizAPI(config);
 
   // Set default date range: last 30 days to 30 days in the future
@@ -180,7 +180,7 @@ export async function listPosts(args: any) {
 }
 
 export async function deletePost(args: any) {
-  const config = getConfig();
+  const config = getConfig(args);
   const api = new PostizAPI(config);
 
   if (!args.id) {

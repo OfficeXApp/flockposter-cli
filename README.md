@@ -32,6 +32,13 @@ export FLOCKPOSTER_API_KEY=your_api_key_here
 export FLOCKPOSTER_API_URL=https://your-custom-api.com
 ```
 
+**Optional:** Tune request behavior
+
+```bash
+export FLOCKPOSTER_TIMEOUT_MS=30000
+export FLOCKPOSTER_VERBOSE=true
+```
+
 ---
 
 ## Commands
@@ -130,6 +137,8 @@ flockposter posts:create --json post.json
 - `--settings` - Platform-specific settings as JSON string
 - `-j, --json` - Path to JSON file with full post structure
 - `--shortLink` - Use short links (default: true)
+- `--timeout` - Request timeout in milliseconds
+- `--verbose` - Show raw backend error messages for debugging
 
 ---
 
@@ -278,14 +287,16 @@ flockposter posts:create \
 VIDEO=$(flockposter upload video.mp4)
 VIDEO_URL=$(echo "$VIDEO" | jq -r '.path')
 
-# Post with uploaded video URL
+# Upload to TikTok without publishing; creator finishes review/edit/publish inside TikTok.
 flockposter posts:create \
   -c "Video caption #fyp" \
   -s "2024-12-31T12:00:00Z" \
-  --settings '{"privacy":"PUBLIC_TO_EVERYONE","duet":true,"stitch":true}' \
+  --settings '{"content_posting_method":"UPLOAD","privacy_level":"PUBLIC_TO_EVERYONE","comment":true,"duet":false,"stitch":false,"autoAddMusic":"no","brand_content_toggle":false,"brand_organic_toggle":false,"video_made_with_ai":false}' \
   -m "$VIDEO_URL" \
   -i "tiktok-id"
 ```
+
+Use `content_posting_method: "DIRECT_POST"` to publish directly to TikTok. Use `content_posting_method: "UPLOAD"` to upload media to TikTok for manual review/edit/publish.
 
 ### LinkedIn
 ```bash
@@ -658,9 +669,15 @@ AGPL-3.0
 ## Links
 
 - **Website:** [app.flockposter.com](https://app.flockposter.com)
-- **API Docs:** [app.flockposter.com](https://app.flockposter.com
+- **API Docs:** [docs.flockposter.com/public-api/introduction](https://docs.flockposter.com/public-api/introduction)
 - **GitHub:** [OfficeXApp/flockposter](https://github.com/OfficeXApp/flockposter)
 - **Issues:** [Report bugs](https://github.com/OfficeXApp/flockposter/issues)
+
+## Reliability Notes
+
+- Default request timeout: `30000ms`
+- Read-only API calls retry transient `408`, `429`, and `5xx` failures
+- Backend error bodies are sanitized by default; use `--verbose` or `FLOCKPOSTER_VERBOSE=true` for raw responses
 
 ---
 
@@ -675,7 +692,7 @@ AGPL-3.0
 | Reddit | getFlairs, searchSubreddits | subreddit, title, flair |
 | YouTube | getPlaylists, getCategories | title, type, tags, playlistId |
 | TikTok | - | privacy, duet, stitch |
-| Instagram | - | post_type (post/story) |
+| Instagram | - | post_type (post/story; Reels use post with video media) |
 | Facebook | getPages | - |
 | Pinterest | getBoards, getBoardSections | - |
 | Discord | getChannels | - |

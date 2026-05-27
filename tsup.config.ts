@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: ['src/index.ts', 'src/api.ts', 'src/config.ts'],
   format: ['cjs'],
   dts: false, // Disable DTS generation to avoid type issues
   splitting: false,

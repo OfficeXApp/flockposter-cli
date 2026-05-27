@@ -1,10 +1,10 @@
 # Publishing the FlockPoster CLI to npm
 
-## Quick Publish (Current Name: "flockposter")
+## Quick Publish
 
 ```bash
 # From apps/cli directory
-pnpm run build
+pnpm run test
 pnpm publish --access public
 ```
 
@@ -42,7 +42,7 @@ Edit `apps/cli/package.json`:
 
 ```bash
 cd apps/cli
-pnpm run build
+pnpm run test
 pnpm publish --access public
 ```
 
@@ -74,7 +74,7 @@ flockposter posts:create -c "Hello!" -i "twitter-123"
 
 1. **Same name:**
    ```json
-   "name": "flockposter",
+   "name": "flockposter-cli",
    "bin": { "flockposter": "./dist/index.js" }
    ```
    Install: `npm i -g flockposter-cli`
@@ -125,7 +125,7 @@ flockposter posts:create -c "Hello!" -i "twitter-123"
 
 - [ ] Build the package
   ```bash
-  pnpm run build
+  pnpm run test
   ```
 
 - [ ] Test locally
@@ -134,6 +134,11 @@ flockposter posts:create -c "Hello!" -i "twitter-123"
   flockposter --help
   ```
 
+- [ ] Enable npm 2FA for publishing or use a tightly scoped granular token
+
+- [ ] Prefer npm trusted publishing over long-lived write tokens
+  `https://docs.npmjs.com/trusted-publishers/`
+
 ### Publish to npm
 
 ```bash
@@ -141,7 +146,7 @@ flockposter posts:create -c "Hello!" -i "twitter-123"
 npm login
 
 # From apps/cli
-pnpm run build
+pnpm run test
 pnpm publish --access public
 
 # Or use the root script

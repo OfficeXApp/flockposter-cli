@@ -1,6 +1,6 @@
 {
   "name": "flockposter-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "FlockPoster CLI - Command line interface for the FlockPoster social media scheduling API",
   "main": "dist/index.js",
   "bin": {
@@ -9,8 +9,9 @@
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
+    "test": "pnpm run build && node --test test/*.test.cjs",
     "start": "node ./dist/index.js",
-    "prepublishOnly": "pnpm run build",
+    "prepublishOnly": "pnpm run test",
     "publish": "tsup && pnpm publish --access public --no-git-checks"
   },
   "files": [

@@ -3,7 +3,7 @@ import { getConfig } from '../config';
 import { readFileSync } from 'fs';
 
 export async function uploadFile(args: any) {
-  const config = getConfig();
+  const config = getConfig(args);
   const api = new PostizAPI(config);
 
   if (!args.file) {

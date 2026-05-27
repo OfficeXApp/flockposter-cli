@@ -2,7 +2,7 @@ import { PostizAPI } from '../api';
 import { getConfig } from '../config';
 
 export async function getAnalytics(args: any) {
-  const config = getConfig();
+  const config = getConfig(args);
   const api = new PostizAPI(config);
 
   if (!args.id) {
@@ -24,7 +24,7 @@ export async function getAnalytics(args: any) {
 }
 
 export async function getPostAnalytics(args: any) {
-  const config = getConfig();
+  const config = getConfig(args);
   const api = new PostizAPI(config);
 
   if (!args.id) {

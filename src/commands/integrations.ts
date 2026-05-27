@@ -1,8 +1,8 @@
 import { PostizAPI } from '../api';
 import { getConfig } from '../config';
 
-export async function listIntegrations() {
-  const config = getConfig();
+export async function listIntegrations(args: any = {}) {
+  const config = getConfig(args);
   const api = new PostizAPI(config);
 
   try {
@@ -17,7 +17,7 @@ export async function listIntegrations() {
 }
 
 export async function getIntegrationSettings(args: any) {
-  const config = getConfig();
+  const config = getConfig(args);
   const api = new PostizAPI(config);
 
   if (!args.id) {
@@ -37,7 +37,7 @@ export async function getIntegrationSettings(args: any) {
 }
 
 export async function triggerIntegrationTool(args: any) {
-  const config = getConfig();
+  const config = getConfig(args);
   const api = new PostizAPI(config);
 
   if (!args.id) {
