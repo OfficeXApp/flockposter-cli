@@ -554,20 +554,47 @@ flockposter posts:create \
 ```
 
 ### TikTok
+
+`content_posting_method` decides where the post lands:
+
+| Value | Result |
+|-------|--------|
+| `"DIRECT_POST"` | Publishes straight to the profile |
+| `"UPLOAD"` | Lands in the TikTok inbox as a draft, to be finished in the mobile app |
+
 ```bash
 # Upload video first (TikTok only accepts verified URLs!)
 VIDEO=$(flockposter upload video.mp4)
 VIDEO_URL=$(echo "$VIDEO" | jq -r '.path')
 
+# Publish directly to the profile
 flockposter posts:create \
   -c "Video caption #fyp" \
   -s "2024-12-31T12:00:00Z" \
-  --settings '{"content_posting_method":"UPLOAD","privacy_level":"PUBLIC_TO_EVERYONE","comment":true,"duet":false,"stitch":false,"autoAddMusic":"no","brand_content_toggle":false,"brand_organic_toggle":false,"video_made_with_ai":false}' \
+  --settings '{"content_posting_method":"DIRECT_POST","privacy_level":"PUBLIC_TO_EVERYONE","comment":true,"duet":false,"stitch":false,"autoAddMusic":"no","brand_content_toggle":false,"brand_organic_toggle":false,"video_made_with_ai":false}' \
+  -m "$VIDEO_URL" \
+  -i "tiktok-id"
+
+# Send to the TikTok inbox as a draft instead
+flockposter posts:create \
+  -c "Video caption #fyp" \
+  -s "2024-12-31T12:00:00Z" \
+  --settings '{"content_posting_method":"UPLOAD","autoAddMusic":"no"}' \
   -m "$VIDEO_URL" \
   -i "tiktok-id"
 ```
 
-Use `content_posting_method: "DIRECT_POST"` to publish directly to TikTok. Use `content_posting_method: "UPLOAD"` to upload media to TikTok for manual review/edit/publish.
+**`content_posting_method` and `autoAddMusic` are always required** — unlike the web UI, the
+API applies no default, so omitting either is a validation error. When using `DIRECT_POST`,
+`duet`, `stitch`, `comment`, `brand_content_toggle` and `brand_organic_toggle` are required
+booleans as well.
+
+**Always send `privacy_level` explicitly with `DIRECT_POST`.** It slips past request
+validation when omitted, then fails at publish time with *"TikTok privacy must be selected
+before publishing"* — the post is accepted and only later flips to `ERROR`.
+
+Two combinations TikTok rejects: `disclose: true` with both brand toggles `false`, and
+`brand_content_toggle: true` together with `privacy_level: "SELF_ONLY"`.
 
 ### X (Twitter)
 ```bash
@@ -650,7 +677,7 @@ https://clawhub.ai/nevo-david/agent-media
 - [examples/multi-platform-with-settings.json](./examples/multi-platform-with-settings.json) - Campaign example
 - [examples/youtube-video.json](./examples/youtube-video.json) - YouTube with tags
 - [examples/reddit-post.json](./examples/reddit-post.json) - Reddit with subreddit
-- [examples/tiktok-video.json](./examples/tiktok-video.json) - TikTok with privacy
+- [examples/tiktok-video.json](./examples/tiktok-video.json) - TikTok direct post with privacy settings
 
 ---
 
@@ -667,6 +694,7 @@ https://clawhub.ai/nevo-david/agent-media
 9. **Required settings** - Some platforms require specific settings (Reddit needs title, YouTube needs title)
 10. **Media MIME types** - CLI auto-detects from file extension, ensure correct extension
 11. **Analytics returns `{"missing": true}`** - The post was published but the platform didn't return a post ID. Run `posts:missing <post-id>` to get available content, then `posts:connect <post-id> --release-id "<id>"` to link it. Analytics will work after connecting.
+12. **TikTok posts landing in drafts** - You sent `"content_posting_method":"UPLOAD"`, or copied a pre-direct-post snippet. Use `"DIRECT_POST"` to publish to the profile. The field is required — there is no API-side default
 
 ---
 

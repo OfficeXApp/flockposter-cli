@@ -156,7 +156,9 @@ flockposter posts:create \
   -i "tiktok-123"
 ```
 
-Use `content_posting_method: "DIRECT_POST"` to publish directly to TikTok. Use `content_posting_method: "UPLOAD"` to upload media to TikTok for manual review/edit/publish.
+Use `content_posting_method: "DIRECT_POST"` to publish directly to the TikTok profile. Use `content_posting_method: "UPLOAD"` to send the video to the TikTok inbox as a draft for manual review/edit/publish.
+
+`content_posting_method` and `autoAddMusic` are always required — the API applies no default. With `DIRECT_POST`, also send `privacy_level`, or the post is accepted and then fails at publish time.
 
 ## JSON File Examples
 

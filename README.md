@@ -287,16 +287,19 @@ flockposter posts:create \
 VIDEO=$(flockposter upload video.mp4)
 VIDEO_URL=$(echo "$VIDEO" | jq -r '.path')
 
-# Upload to TikTok without publishing; creator finishes review/edit/publish inside TikTok.
+# Publish directly to the profile.
+# Use "content_posting_method":"UPLOAD" to send it to the TikTok inbox as a draft instead.
 flockposter posts:create \
   -c "Video caption #fyp" \
   -s "2024-12-31T12:00:00Z" \
-  --settings '{"content_posting_method":"UPLOAD","privacy_level":"PUBLIC_TO_EVERYONE","comment":true,"duet":false,"stitch":false,"autoAddMusic":"no","brand_content_toggle":false,"brand_organic_toggle":false,"video_made_with_ai":false}' \
+  --settings '{"content_posting_method":"DIRECT_POST","privacy_level":"PUBLIC_TO_EVERYONE","comment":true,"duet":false,"stitch":false,"autoAddMusic":"no","brand_content_toggle":false,"brand_organic_toggle":false,"video_made_with_ai":false}' \
   -m "$VIDEO_URL" \
   -i "tiktok-id"
 ```
 
-Use `content_posting_method: "DIRECT_POST"` to publish directly to TikTok. Use `content_posting_method: "UPLOAD"` to upload media to TikTok for manual review/edit/publish.
+`content_posting_method` and `autoAddMusic` are required; `privacy_level` must be sent
+explicitly with `DIRECT_POST` or the post fails at publish time. See
+[PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md) for the full schema.
 
 ### LinkedIn
 ```bash
